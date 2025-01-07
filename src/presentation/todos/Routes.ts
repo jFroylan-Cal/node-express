@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { TodosController } from "./controller";
+import { TodosController } from "./Controller";
 
 export class TodoRoutes {
     static get routes() {
@@ -10,6 +10,7 @@ export class TodoRoutes {
         router.get('/:id', todosController.getTodoById);
         router.post('/', todosController.createTodo);
         router.put('/:id', todosController.updateTodo);
+        router.delete('/:id', todosController.deleteTodo);
         return router;
     }
 }
