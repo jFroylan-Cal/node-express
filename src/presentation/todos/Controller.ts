@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { prisma } from "../../data/postgres";
 
 const todos = [
     { id: 1, title: 'Buy milk', createdAt: new Date() },
@@ -10,15 +11,22 @@ export class TodosController {
     //* 
     constructor() {}
     //*Get TODOs
-    public getTodos = (request: Request, response: Response) => {
+    public getTodos = async (request: Request, response: Response) => {
+        const todos = await prisma.todo.findMany({
+            orderBy: {
+                id: 'desc',
+            }
+        });
         response.json(todos);
     }
-    public getTodoById = (request: Request, response: Response) => {
+    public getTodoById = async (request: Request, response: Response) => {
         const id = +request.params.id;
         if (isNaN(id)) {
             response.status(400).json({ error:'Invalid id is not a number' }); 
         }
-        const todo = todos.find(todo => todo.id === id);
+        const todo = await prisma.todo.findUnique({
+            where: { id },
+        });
         if (todo) {
             response.json(todo);
         } else {
@@ -26,44 +34,60 @@ export class TodosController {
         }
     }
 
-    public createTodo = (request: Request, response: Response) => { 
+    public createTodo = async (request: Request, response: Response) => { 
         const { title } = request.body;
         if (!title) {
             response.status(400).json({ error:'Title is required' });
         }
-        const newTodo = { id: todos.length + 1, title, createdAt: new Date() };
-        todos.push(newTodo);
-        response.json(newTodo);
+
+        const todo = await prisma.todo.create({
+            data: {title},
+        });
+
+        response.json(todo);
     }
 
-    public updateTodo = (request: Request, response: Response) => { 
+    public updateTodo = async (request: Request, response: Response) => { 
         const id = +request.params.id;
         if (isNaN(id)) {
             response.status(400).json({ error:'Invalid id is not a number' }); 
         }
-        const todo = todos.find(todo => todo.id === id);
-        if (todo) {
-            const { title } = request.body;
-            if (!title) {
-                response.status(400).json({ error:'Title is required' });
-            }
-            todo.title = title;
+        const { title } = request.body;
+        if (!title) {
+            response.status(400).json({ error:'Title is required' });
+        }
+        try {
+            const todo = await prisma.todo.findUnique({
+                where: { id },
+            });
+
+            await prisma.todo.update({
+                where: { id },
+                data: { title },
+            });
             response.json(todo);
-        } else {
+            
+        } catch (error) {
             response.status(404).json({ error:`Todo with id ${id} not found` });
         }
-        response.json();
     }
 
 
-    public deleteTodo = (request: Request, response: Response) => { 
+    public deleteTodo = async (request: Request, response: Response) => { 
         const id = +request.params.id;
-        const todo = todos.find(todo => todo.id === id);
-        if (todo) {
-            todos.splice(todos.indexOf(todo), 1);
+        if (isNaN(id)) {
+            response.status(400).json({ error:'Invalid id is not a number' }); 
+        }
+        try {
+            const todo = await prisma.todo.findUnique({
+                where: { id },
+            });
+            await prisma.todo.delete({
+                where: { id },
+            });
             response.json(todo);
-        } else {
-            response.status(404).json({ error:`Todo with id ${id} not found` });
+        } catch (error) {
+            response.status(400).json({ error:`Todo with id ${id} not found` });
         }
     }
 }
