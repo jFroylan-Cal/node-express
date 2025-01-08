@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../../data/postgres";
+import { CreateTodoDto } from "../../domain/dtos/todos/Create-todo.dto";
+import { UpdateTodoDto } from "../../domain/dtos/todos/Update-todo.dto";
 
 const todos = [
     { id: 1, title: 'Buy milk', createdAt: new Date() },
@@ -35,41 +37,34 @@ export class TodosController {
     }
 
     public createTodo = async (request: Request, response: Response) => { 
-        const { title } = request.body;
-        if (!title) {
-            response.status(400).json({ error:'Title is required' });
+        const [error, createTodoDto] = CreateTodoDto.create(request.body);
+        try {
+            const todo = await prisma.todo.create({
+                data: createTodoDto!,
+            });
+            response.json(todo);
+        } catch (e) {
+            response.status(400).json({ error });
         }
-
-        const todo = await prisma.todo.create({
-            data: {title},
-        });
-
-        response.json(todo);
     }
 
     public updateTodo = async (request: Request, response: Response) => { 
         const id = +request.params.id;
-        if (isNaN(id)) {
-            response.status(400).json({ error:'Invalid id is not a number' }); 
+        const [error, updateTodoDto] = UpdateTodoDto.create({ ...request.body, id });
+        if(error) {
+            response.status(400).json({ error });
         }
-        const { title } = request.body;
-        if (!title) {
-            response.status(400).json({ error:'Title is required' });
-        }
-        try {
-            const todo = await prisma.todo.findUnique({
+            const todo = await prisma.todo.findFirst({
                 where: { id },
             });
-
-            await prisma.todo.update({
+            if (!todo) {
+                response.status(404).json({ error:`Todo with id ${id} not found` });
+            }
+            const todoUpdated = await prisma.todo.update({
                 where: { id },
-                data: { title },
+                data: updateTodoDto!.values,
             });
-            response.json(todo);
-            
-        } catch (error) {
-            response.status(404).json({ error:`Todo with id ${id} not found` });
-        }
+            response.json(todoUpdated);
     }
 
 
