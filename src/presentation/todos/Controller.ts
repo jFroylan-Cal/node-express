@@ -52,7 +52,7 @@ export class TodosController {
         const id = +request.params.id;
         const [error, updateTodoDto] = UpdateTodoDto.create({ ...request.body, id });
         if(error) {
-            response.status(400).json({ error });
+            response.status(400).json({ error }); 
         }
             const todo = await prisma.todo.findFirst({
                 where: { id },
