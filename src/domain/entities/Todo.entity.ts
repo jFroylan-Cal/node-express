@@ -1,5 +1,14 @@
 
 export class TodoEntity {
+    
+    /**
+     * 
+     * @param id 
+     * @param title 
+     * @param createdAt 
+     * @param updatedAt         
+     */
+
     constructor(
         public id: number,
         public title: string,
@@ -10,6 +19,12 @@ export class TodoEntity {
     get isCompleted() {
         return !!this.updatedAt; 
     }
+
+    /**
+     * 
+     * @param obj 
+     * @returns TodoEntity       
+     */
 
     public static fromObject(obj: {[key: string]: any}) {
         const { id, title, createdAt, updatedAt } = obj;

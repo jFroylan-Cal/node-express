@@ -8,6 +8,9 @@ interface Options {
     routes: Router
 }
 
+/**
+ * Server
+ */
 export class Server { 
     
     private app = express();

@@ -8,6 +8,11 @@ import { TodoEntity } from "../../domain/entities/Todo.entity";
 
 export class TodoDatasourceImpl implements TodoDatasource {
 
+    /**
+     * 
+     * @param createTodoDto 
+     * @returns 
+     */
     async create(createTodoDto: CreateTodoDto): Promise<any> {
         const todo = await prisma.todo.create({
             data: createTodoDto,
@@ -15,6 +20,11 @@ export class TodoDatasourceImpl implements TodoDatasource {
         return TodoEntity.fromObject(todo);
     }
 
+    /**
+     * 
+     * @returns TodoEntity[]        
+     * 
+     */
     async getAll(): Promise<TodoEntity[]> {
         const todos = await prisma.todo.findMany({
                 orderBy: {
@@ -25,6 +35,11 @@ export class TodoDatasourceImpl implements TodoDatasource {
         return todos.map(todo => TodoEntity.fromObject(todo));
     }
 
+    /**
+     * 
+     * @param {number} id
+     * @returns TodoEntity | null
+     */
     async getById(id: number): Promise<any> {
         const todo = await prisma.todo.findUnique({
             where: { id },
@@ -34,7 +49,12 @@ export class TodoDatasourceImpl implements TodoDatasource {
         }
         return todo ? TodoEntity.fromObject(todo) : null;
     }
-
+    
+    /**
+     * 
+     * @param updateTodoDto 
+     * @returns TodoEntity     
+     */
     async update(updateTodoDto: UpdateTodoDto): Promise<TodoEntity> {
         await this.getById(updateTodoDto.id);
         const updatedTodo = await prisma.todo.update({
@@ -44,6 +64,11 @@ export class TodoDatasourceImpl implements TodoDatasource {
         return TodoEntity.fromObject(updatedTodo);
     }
 
+    /**
+     * 
+     * @param id 
+     * @returns TodoEntity     
+     */
     async delete(id: number): Promise<TodoEntity> {
         await this.getById(id);
         const deletedTodo = await prisma.todo.delete({

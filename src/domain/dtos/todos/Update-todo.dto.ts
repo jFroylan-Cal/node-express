@@ -1,10 +1,22 @@
-export class UpdateTodoDto { 
+export class UpdateTodoDto {
+    /**
+     * 
+     * @param id 
+     * @param title 
+     * @param updatedAt
+     * @returns UpdateTodoDto
+     * 
+     */
     private constructor(
         public readonly id: number,
         public readonly title?: string,
         public readonly updatedAt?: Date
     ) { }
 
+    /**
+     * 
+     * @returns {[key: string]: any}
+     */
     get values() {
         const returnObj: { [key: string]: any } = {};
         if (this.title) returnObj.title = this.title;
@@ -12,6 +24,11 @@ export class UpdateTodoDto {
         return returnObj;
     }
 
+    /**
+     * 
+     * @param props 
+     * @returns [string?, UpdateTodoDto?] 
+     */
     static create(props: { [key: string]: any }): [string?, UpdateTodoDto?] {
         const { id, title, updatedAt } = props;
         if (!id || isNaN(id)) {
