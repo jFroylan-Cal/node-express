@@ -7,7 +7,7 @@ import { TodoRepository } from "../../repository/Todo.repository";
 export interface GetTodoUseCase {
     /**
      * Execute
-     * @param id
+     * @param {number} id
      * @returns TodoEntity
      */
     execute(id: number): Promise<TodoEntity | null>;
@@ -25,7 +25,7 @@ export class GetTodo implements GetTodoUseCase {
 
     /**
      * Execute
-     * @param id
+     * @param {number} id
      * @returns TodoEntity
      */
     execute(id: number): Promise<TodoEntity | null> {

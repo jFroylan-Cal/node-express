@@ -7,7 +7,7 @@ import { TodoRepository } from "../../repository/Todo.repository";
 export interface DeleteTodoUseCase {
     /**
      * Execute
-     * @param id
+     * @param {number} id
      * @returns TodoEntity
      */
     execute(id: number): Promise<TodoEntity>;
@@ -25,7 +25,7 @@ export class DeleteTodo implements DeleteTodoUseCase {
 
     /**
      * Execute
-     * @param id
+     * @param {number} id
      * @returns TodoEntity
      */
     execute(id: number): Promise<TodoEntity> {

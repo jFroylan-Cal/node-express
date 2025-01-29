@@ -2,12 +2,11 @@ import { Request, Response } from "express";
 import { CreateTodoDto } from "../../domain/dtos/todos/Create-todo.dto";
 import { UpdateTodoDto } from "../../domain/dtos/todos/Update-todo.dto";
 import { TodoRepository } from "../../domain/repository/Todo.repository";
-
-const todos = [
-    { id: 1, title: 'Buy milk', createdAt: new Date() },
-    { id: 2, title: 'Buy bread', createdAt: null },
-    { id: 3, title: 'Buy beer' , createdAt: new Date() },
-]
+import { CreateTodo } from "../../domain/use-cases/todo/Create-todo";
+import { DeleteTodo } from "../../domain/use-cases/todo/Delete-todo";
+import { GetTodo } from "../../domain/use-cases/todo/Get-todo";
+import { GetTodos } from "../../domain/use-cases/todo/Get-todos";
+import { UpdateTodo } from "../../domain/use-cases/todo/Update-todo";
 
 export class TodosController {
     /**
@@ -19,40 +18,38 @@ export class TodosController {
     /**Get TODOs
     * @returns Todo[]
     */
-    public getTodos = async (request: Request, response: Response) => {
-        const todos = await this.todoRepository.getAll();
-        response.json(todos);
+    public getTodos =  (request: Request, response: Response) => {
+        new GetTodos(this.todoRepository).execute()
+            .then(todos => response.json(todos))
+            .catch(error => response.status(400)
+            .json({ error }));
     }
 
     /**Get TODO by id
      * @param {number} id
      * @returns Todo
      */
-    public getTodoById = async (request: Request, response: Response) => {
+    public getTodoById = (request: Request, response: Response) => {
         const id = +request.params.id;
-        if (isNaN(id)) {
-            response.status(400).json({ error:'Invalid id is not a number' }); 
-        }
-        try {
-            const todo = await this.todoRepository.getById(id);
-            response.json(todo);
-        } catch (error) {
-            response.status(404).json(error);   
-        }
+        new GetTodo(this.todoRepository).execute(id)
+            .then(todo => response.json(todo))
+            .catch(error => response.status(400)
+            .json({ error }));
     }
 
     /** Create TODO
      * @param CreateTodoDto
      * @returns Todo
      */
-    public createTodo = async (request: Request, response: Response) => { 
+    public createTodo = (request: Request, response: Response) => { 
         const [error, createTodoDto] = CreateTodoDto.create(request.body);
-        try {
-            const todo = await this.todoRepository.create(createTodoDto!);
-            return response.json(todo);
-        } catch (e) {
+        if (error) {
             return response.status(400).json({ error });
         }
+        new CreateTodo(this.todoRepository).execute(createTodoDto!)
+            .then(todo => response.json(todo))
+            .catch(error => response.status(400)
+            .json({ error }));
     }
 
     /** Update TODO
@@ -60,27 +57,27 @@ export class TodosController {
      * @param UpdateTodoDto
      * @returns Todo
      */
-    public updateTodo = async (request: Request, response: Response) => { 
+    public updateTodo = (request: Request, response: Response) => { 
         const id = +request.params.id;
         const [error, updateTodoDto] = UpdateTodoDto.create({ ...request.body, id });
-        if(error) {
-            response.status(400).json({ error }); 
+        if (error) {
+            response.status(400).json({ error });
         }
-            const updatedTodo = await this.todoRepository.update(updateTodoDto!);
-            if (!updatedTodo) {
-                response.status(404).json({ error:`Todo with id ${id} not found` });
-            }
-            const todoUpdated = await this.todoRepository.update(updateTodoDto!);
-            response.json(todoUpdated);
+        new UpdateTodo(this.todoRepository).execute(updateTodoDto!)
+            .then(todo => response.json(todo))
+            .catch(error => response.status(400)
+            .json({ error }));
     }
 
     /** Delete TODO
      * @param {number} id
      * @returns Todo           
      */
-    public deleteTodo = async (request: Request, response: Response) => { 
+    public deleteTodo = (request: Request, response: Response) => {
         const id = +request.params.id;
-        const deletedTodo = await this.todoRepository.delete(id);
-        response.json(deletedTodo);
+        new DeleteTodo(this.todoRepository).execute(id)
+            .then(todo => response.json(todo))
+            .catch(error => response.status(400)
+            .json({ error }));
     }
 }
